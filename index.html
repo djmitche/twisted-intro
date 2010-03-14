@@ -96,9 +96,10 @@
 <div class="slide">
 <h1>Deferreds</h1>
 <p><b>Model</b>: a result that's not ready yet</p>
+<img style="float: right" src="example1.png" />
 <ul>
     <li>Returned as a function result to indicate "I'm not done yet."</li>
-    <li>A deferred is "fired" when the operation it represents is complete.</li>
+    <li>A deferred is "fired" with a result value when the operation it represents is complete.</li>
     <li>Use <tt>addCallback</tt> to get called when the deferred fires:
 <pre class="sh_python">
 # see example1.py
@@ -123,16 +124,107 @@ def print_user_info(user):
 
 <div class="slide">
 <h1>Deferreds</h1>
-<p><b>Model</b>: a result that's not ready yet</p>
-<center><img src="deferred-attach.png"></center>
-<span style="font-size: 75%">(don't mind the errbacks just yet)</span>
+<p><b>Chaining</b> - mulitple callbacks, called in sequence</p>
+<img style="float: right" src="example2.png" />
+<pre class="sh_python">
+# see example2.py
+def get_user_name(user):
+    d = mydb.get_user(user)
+    def extract_name(res):
+        if res:
+            return res.name
+        return "(unknown)"
+    d.addCallback(extract_name)
+    return d
+
+def print_user_name(user):
+    d = get_user_name(user)
+    def print_name(name):
+        print "Name:", name
+    d.addCallback(print_name)
+</pre>
+</ul>
 <div class="handout">
 
-    <p>This is a very basic model of deferreds, but it handles the notion of ongoing
-    processes nicely.<p>
+    <p>Here two callbacks are added to the same deferred.  This is a common
+    pattern: get a deferred, add a callback to do your thing, and return the
+    same deferred.</p>
 
-    <p>This particular style, using nested functions, is my favorite, but lots
-    of people use separate (un-nested) functions instead.</p>
+    <p>Note that the deferred is initially fired with a User object.  The
+    <tt>extract_name</tt> callback returns a string, which is passed to the
+    next callback in the chain, <tt>print_user_name</tt>.</p>
+
+    <p>This is where API docs are useful: <tt>mydb.get_user</tt> returns a
+    Deferred that fires with a user object.  <tt>get_user_name</tt> returns a
+    Deferred that fires with the name of the user, or "(unknown)".</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Deferreds</h1>
+<p><b>Chaining</b> - mulitple callbacks, called in sequence</p>
+<img style="float: right" src="example2.png" />
+<pre class="sh_python">
+# see example2.py
+def get_user_name(user):
+    d = mydb.get_user(user)
+    def extract_name(res):
+        if res:
+            return res.name
+        return "(unknown)"
+    d.addCallback(extract_name)
+    return d
+
+def print_user_name(user):
+    d = get_user_name(user)
+    def print_name(name):
+        print "Name:", name
+    d.addCallback(print_name)
+</pre>
+</ul>
+<div class="handout">
+
+    <p>Here two callbacks are added to the same deferred.  This is a common
+    pattern: get a deferred, add a callback to do your thing, and return the
+    same deferred.</p>
+
+    <p>Note that the deferred is initially fired with a User object.  The
+    <tt>extract_name</tt> callback returns a string, which is passed to the
+    next callback in the chain, <tt>print_user_name</tt>.</p>
+
+    <p>This is where API docs are useful: <tt>mydb.get_user</tt> returns a
+    Deferred that fires with a user object.  <tt>get_user_name</tt> returns a
+    Deferred that fires with the name of the user, or "(unknown)".</p>
+
+    <p>What about error handling?  What if <tt>mydb.get_user</tt> raises an
+    exception?</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Deferreds</h1>
+<p><b>Errbacks</b> - error handling</p>
+<img style="float: right" src="example3.png" />
+<ul>
+    <li>A deferred operation can fail, in which case the errback is called</li>
+</ul>
+<pre class="sh_python">
+# see example3.py
+def print_page_title(url):
+    d = get_page_title(url)
+    def got_info(title):  # callback
+        print "title:", title
+    def fail_info(f):     # errback
+        print "failed!", f
+    d.addCallbacks(got_info, fail_info)
+</pre>
+</ul>
+<div class="handout">
+
 
 </div>
 </div>
