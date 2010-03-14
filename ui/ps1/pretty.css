@@ -1,0 +1,94 @@
+/*
+ * Author: Daniel Steinbrook
+ * Design Name: Orange Fire
+ * Version: 1.0
+ * Last Modified: 2005-03-16
+ *
+ * Copyright: Creative Commons Attribution-NonCommercial-ShareAlike 2.0
+ * Licence URI: http://creativecommons.org/licenses/by-nc-sa/2.0/
+ *
+ * Credits: Uses code adapted from default theme and: Pixel Theme 2004 by Martin Hense ::: www.lounge7.de
+ */
+
+/* Following are the presentation styles -- edit away!
+   Note that the 'body' font size may have to be changed if the resolution is
+    different than expected. */
+
+body {background: white url(ps1.png) no-repeat top right; color: #08093F; font-size: 1.8em; }
+:link, :visited {text-decoration: none;}
+#controls :active {color: #88A !important;}
+#controls :focus {outline: 1px dotted #227;}
+h1, h2, h3, h4 {font-size: 100%; margin: 0; padding: 0; font-weight: inherit;}
+ul, pre {margin: 0; line-height: 1em;}
+html, body {margin: 0; padding: 0;}
+
+blockquote, q {font-style: italic;}
+blockquote {padding: 0 2em 0.5em; margin: 0 1.5em 0.5em; text-align: center; font-size: 1em;}
+blockquote p {margin: 0;}
+blockquote i {font-style: normal;}
+blockquote b {display: block; margin-top: 0.5em; font-weight: normal; font-size: smaller; font-style: normal;}
+blockquote b i {font-style: italic;}
+
+kbd {font-weight: bold; font-size: 1em;}
+sup {font-size: smaller; line-height: 1px;}
+
+code {padding: 2px 0.25em; font-weight: bold; color: #533;}
+code.bad, code del {color: red;}
+code.old {color: silver;}
+pre {padding: 0; margin: 0.25em 0 0.5em 0.5em; color: #533; font-size: 90%;}
+pre code {display: block;}
+ul {margin-right: 7%; margin-left: 50px; list-style: square;}
+li {margin-top: 0.75em; margin-right: 0;}
+ul ul {line-height: 1;}
+ul ul li {margin: .2em; font-size: 85%; list-style: square;}
+img.leader {display: block; margin: 0 auto;}
+
+div#header, div#footer {color: #000;
+  font-family: Verdana, Helvetica, sans-serif;}
+div#header {
+	background: transparent url(pixelheader.jpg) 0 0 no-repeat;
+	height: 75px;
+	background-image:url(ff-logo-tl.gif);
+}
+div#footer {font-size: 0.5em; font-weight: bold; padding: 1em 0; background-color: rgb(232, 136, 160); border-top: 1px solid #EEE; }
+#footer h1, #footer h2 {display: block; padding: 0 1em;}
+#footer h2 {font-style: italic;}
+
+div.long {font-size: 0.75em;}
+.slide {font-family: Verdana, Helvetica, Arial, sans-serif;}
+.slide h1 {position: absolute; top: -1em; left: 40px; z-index: 1;
+  margin: 0; padding: 0.3em 0 0 50px; white-space: nowrap;
+  font: bold 150%/1em Verdana, sans-serif; text-transform: capitalize;
+  color: rgb(209, 17, 64);}
+
+.slide h3 {font-size: 130%;}
+h1 abbr {font-variant: small-caps;}
+
+div#controls {position: absolute; z-index: 1; left: 50%; top: 0;
+  width: 50%; height: 100%;
+  text-align: right;}
+#footer>div#controls {position: fixed; bottom: 0; padding: 1em 0;
+  top: auto; height: auto;}
+div#controls form {position: absolute; bottom: 0; right: 0; width: 100%;
+  margin: 0; padding: 0;}
+div#controls a {font-size: 2em; padding: 0; margin: 0 0.5em; 
+  border: none;
+  cursor: pointer;
+  background: #fff; color: #646587;}
+div#controls select {visibility: hidden; background: #DDD; color: #227;}
+div#controls div:hover select {visibility: visible;}
+
+#currentSlide {text-align: center; font-size: 0.5em; color: #646587;
+   font-family: Verdana, Helvetica, sans-serif; font-weight: bold;}
+
+#slide0 {padding-top: 2em; font-size: 90%;}
+#slide0 h1 {position: static; white-space: normal;	
+	margin: 10; padding: 0px 10px 0px 0px; text-align: center;
+   font: bold 3em Verdana; white-space: normal; margin-top:0px; 
+   color: #808080; }
+#slide0 h3 {margin-top: 0.5em; font-size: 1.5em; text-align:center;}
+#slide0 h4 {margin-top: 0; font-size: 1em; text-align:center;}
+
+ul.urls {list-style: none; display: inline; margin: 0;}
+.urls li {display: inline; margin: 0;}
+.note {display: none;}
