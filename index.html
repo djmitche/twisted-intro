@@ -33,6 +33,11 @@
         startup();
     }
 </script>
+
+<!-- don't force a solid white background on source code -->
+<style>
+pre.sh_python { background: inherit }
+</style>
 </head>
 <body>
 
@@ -94,8 +99,8 @@
 
 
 <div class="slide">
-<h1>Deferreds</h1>
-<p><b>Model</b>: a result that's not ready yet</p>
+<h1>Deferreds: the model</h1>
+<p><b>Deferred</b>: a result that's not ready yet</p>
 <img style="float: right" src="example1.png" />
 <ul>
     <li>Returned as a function result to indicate "I'm not done yet."</li>
@@ -123,8 +128,8 @@ def print_user_info(user):
 
 
 <div class="slide">
-<h1>Deferreds</h1>
-<p><b>Chaining</b> - mulitple callbacks, called in sequence</p>
+<h1>Deferreds: chaining</h1>
+<p>multiple callbacks are called in sequence</p>
 <img style="float: right" src="example2.png" />
 <pre class="sh_python">
 # see example2.py
@@ -143,7 +148,6 @@ def print_user_name(user):
         print "Name:", name
     d.addCallback(print_name)
 </pre>
-</ul>
 <div class="handout">
 
     <p>Here two callbacks are added to the same deferred.  This is a common
@@ -163,11 +167,9 @@ def print_user_name(user):
 
 
 <div class="slide">
-<h1>Deferreds</h1>
-<p><b>Chaining</b> - mulitple callbacks, called in sequence</p>
-<img style="float: right" src="example2.png" />
+<h1>Deferreds: chaining example</h1>
 <pre class="sh_python">
-# see example2.py
+# see example2.py<img style="float: right" src="example2.png" />
 def get_user_name(user):
     d = mydb.get_user(user)
     def extract_name(res):
@@ -183,7 +185,6 @@ def print_user_name(user):
         print "Name:", name
     d.addCallback(print_name)
 </pre>
-</ul>
 <div class="handout">
 
     <p>Here two callbacks are added to the same deferred.  This is a common
@@ -206,12 +207,9 @@ def print_user_name(user):
 
 
 <div class="slide">
-<h1>Deferreds</h1>
-<p><b>Errbacks</b> - error handling</p>
+<h1>Deferreds: errbacks</h1>
 <img style="float: right" src="example3.png" />
-<ul>
-    <li>A deferred operation can fail, in which case the errback is called</li>
-</ul>
+<p>A deferred operation can fail, in which case the errback is called</p>
 <pre class="sh_python">
 # see example3.py
 def print_page_title(url):
@@ -219,12 +217,235 @@ def print_page_title(url):
     def got_info(title):  # callback
         print "title:", title
     def fail_info(f):     # errback
-        print "failed!", f
+        print "failed!", f.type, f.value
+        # (consume the error)
     d.addCallbacks(got_info, fail_info)
 </pre>
+<div class="handout">
+
+    <p>If <tt>get_page_title</tt> succeeds, then <tt>fail_info</tt> is never called.
+    However, if the operation fails, then <tt>got_info</tt> is never called.  Instead,
+    <tt>fail_info</tt> is called wth a <tt>Failure</tt> object.  Failures wrap Exception
+    objects.</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Deferreds: multiple</h1>
+<img style="float: right" src="full-cbeb.png" />
+<p><b>Multiple Callback and Errbacks</b></p>
+<ul>
+    <li>Callbacks and errbacks come in pairs</li>
+    <li>If a callback raises an exception, then execution switches to errbacks</li>
+    <ul>
+        <li>Note that an exception in the original operation is not handled like this!</li>
+    </ul>
+    <li>If an errback does not re-raise the Failure, then execution switches back to callbacks</li>
+    <ul>
+        <li>Be careful that nonterminal errback handlers return <tt>f</tt>!</li>
+    </ul>
 </ul>
 <div class="handout">
 
+    <p>This is the "full grid" of callbacks and errbacks.  Execution can, in
+    principal, switch back and forth from callbacks to errbacks several times
+    for a single deferred.</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Deferreds: multiple example</h1>
+<pre class="sh_python">
+def get_contacts(username):
+    d = im_service.get_contact_list(username)
+    def cb(contacts):<img style="float: right" src="web-cbeb.png" />
+        return [ ctct.username for ctct in contacts ]
+    def eb(f):
+        print "err getting contacts for %s: %s" \
+            % (username, f.value)
+        return f
+    d.addCallbacks(cb, eb)
+    return d
+
+def ajax_get_contacts(request):
+    d = get_contacts(request.query['username'][0]) # BUG
+    def cb(ctctnames):
+        return json.dumps({'contacts' : ctctnames})
+    def eb(f):
+        return json.dumps({'error' : str(f.value))
+    d.addCallbacks(cb, eb)
+    return d
+</pre>
+<div class="handout">
+
+    <p>This is a somewhat overwrought example of a full set of callbacks and
+    errbacks.  Note that, because it just logs the error, the errback for
+    <tt>get_contats</tt> always returns the failure, passing it along to
+    <tt>ajax_get_contacts</tt>' errback.  This is what I mean by a
+    "nonterminal" errback.</p>
+
+    <p>However, the errback in <tt>ajax_get_contacts</tt> *is* terminal.
+    Presumably this function's deferred is expected to fire with a JSON string
+    to hand back to the browser, and we want to handle error reporting with
+    JavaScript and not with the usual browser mechanisms.  So the failure is
+    "eaten" here, and the web framework's callback, not its errback, will be
+    called next.</p>
+
+    <p>Note that an exception in <tt>im_service.get_contact_list</tt> will
+    leave the deferred un-called-back.  This is bad!  Don't allow this to
+    happen!</p>
+
+    <p>However, an exception in the callback for <tt>get_contacts</tt> (maybe a
+    contact object without a <tt>username</tt> attribute?) will cause the
+    errback <b>in <tt>ajax_get_contacts</tt></b> to be called and it will
+    report the error correctly.  Note that the errback for
+    <tt>get_contacts</tt> is not called in this case!</p>
+
+    <p>There's still a bug here: if no username is specified, then
+    <tt>ajax_get_contacts</tt> will raise an exception that probably won't be
+    handled very well by the web framework (it will probably create a lot of
+    HTML that will not parse as JSON).</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Deferreds: skipping errbacks</h1>
+<pre class="sh_python">
+def get_contacts(username):
+    d = im_service.get_contact_list(username)
+    def cb(contacts):<img style="float: right" src="web-simpler.png" />
+        return [ ctct.username for ctct in contacts ]
+    d.addCallback(cb)
+    return d
+
+def ajax_get_contacts(request):
+    d = get_contacts(request.query['username'][0]) # BUG
+    def cb(ctctnames):
+        return json.dumps({'contacts' : ctctnames})
+    def eb(f):
+        return json.dumps({'error' : str(f.value))
+    d.addCallbacks(cb, eb)
+    return d
+</pre>
+<div class="handout">
+
+    <p>This example is slightly simpler.  Any error in
+    <tt>im_service.get_contact_list</tt> will go directly to
+    <tt>ajax_get_contacts</tt>' errback method, which will report it to the
+    JavaScript in the browser correctly.</tt>
+
+    <p>There's still a bug here: if no username is specified, then
+    <tt>ajax_get_contacts</tt> will raise an exception.  The web frameworkd
+    is probably prepared to handle a <i>failure</i>, but not an exception.</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Deferreds: succeed</h1>
+Handle non-existed username with a JSON error:
+<pre class="sh_python">
+from twisted.internet import defer
+def ajax_get_contacts(request):
+    try:
+        username = request.query['username'][0]
+    except KeyError:
+        return defer.succeed(
+            json.dumps({'error' : 'no username specified'}))
+
+    d = get_contacts(username)
+    def cb(ctctnames):
+        return json.dumps({'contacts' : ctctnames})
+    def eb(f):
+        return json.dumps({'error' : str(f.value))
+    d.addCallbacks(cb, eb)
+    return d
+</pre>
+<div class="handout">
+
+    <p>This is one way to solve the problem: shortcut the whole contact lookup,
+    and return an <i>already-fired</i> Deferred object to the web framework.</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Deferreds: fail</h1>
+..or return a failure..
+<pre class="sh_python">
+from twisted.internet import defer
+def ajax_get_contacts(request):
+    try:
+        username = request.query['username'][0]
+    except KeyError:
+        return defer.fail() # use current exception
+
+    d = get_contacts(username)
+    def cb(ctctnames):
+        return json.dumps({'contacts' : ctctnames})
+    def eb(f):
+        return json.dumps({'error' : str(f.value))
+    d.addCallbacks(cb, eb)
+    return d
+</pre>
+<div class="handout">
+
+    <p>Here, we return a failure automatically built from the <tt>KeyError</tt> to the web framework</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Deferreds: nesting</h1>
+..or handle it <i>in</i> a callback..
+<pre class="sh_python">
+from twisted.internet import defer<img style="float: right" src="nested.png" />
+def get_contacts(username):
+    d = im_service.get_contact_list(username)
+    def cb(contacts):
+        return [ ctct.username for ctct in contacts ]
+    d.addCallback(cb)
+    return d
+
+def ajax_get_contacts(request):
+    d = defer.succeed(None)
+    def get_username(_): # ignore argument
+        return request.query['username'][0]
+    d.addCallback(get_username)
+    d.addCallback(get_contacts) # this returns a deferred!
+    def json_cb(ctctnames):
+        return json.dumps({'contacts' : ctctnames})
+    def json_eb(f):
+        return json.dumps({'error' : str(f.value))
+    d.addCallbacks(json_cb, json_eb)
+    return d
+</pre>
+<div class="handout">
+
+    <p>This moves the entire operation <i>into</i> the callback chain, by
+    starting with an already-fired callback, and getting the username in the
+    first callback.  Callbacks always take an argument, and <tt>_</tt> is a good
+    way to indicate "I'm ignoring this argument".</p>
+    
+    <p><tt>get_username</tt> returns the username, which is then handed as a
+    single argument to the next callback.<p>
+
+    <p>That callback is <tt>get_username</tt> which coincidentally takes a
+    single arugment.  However, it returns a deferred.  Why does
+    <tt>json_cb</tt> not get called with a deferred?  Twisted automatically
+    "nests" deferreds -- it basically adds the callbacks and errbacks from the
+    inner deferred to the outer deferred.  What actually happens is much more
+    complex, since more callbacks and errbacks could be added to that inner
+    deferred later, but let's not think about that right now.</p>
 
 </div>
 </div>
