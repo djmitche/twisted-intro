@@ -252,6 +252,7 @@ def print_page_title(url):
     <p>This is the "full grid" of callbacks and errbacks.  Execution can, in
     principal, switch back and forth from callbacks to errbacks several times
     for a single deferred.</p>
+    <br clear="all" />
 
 </div>
 </div>
@@ -350,7 +351,7 @@ def ajax_get_contacts(request):
 
 <div class="slide">
 <h1>Deferreds: succeed</h1>
-Handle non-existed username with a JSON error:
+Handle non-existent username with a JSON error:
 <pre class="sh_python">
 from twisted.internet import defer
 def ajax_get_contacts(request):
@@ -448,6 +449,208 @@ def ajax_get_contacts(request):
     deferred later, but let's not think about that right now.</p>
 
 </div>
+</div>
+
+
+<div class="slide">
+<h1>Deferreds: methods</h1>
+<pre class="sh_python">
+# add a callback
+d.addCallback(cb, *args, **kwargs)
+# add an errback
+d.addErrback(cb, *args, **kwargs)
+# add one of each (side by side)
+d.addCallbacks(cb, eb)
+# add the same callable as callback and errback
+d.addBoth(callable)
+# fire with success
+d.callback(result)
+# fire with a failure from the current exception
+d.errback()
+# fire with a given failure
+d.errback(f)
+# new, fired Deferred
+d = defer.succeed(result)
+# new, failed Deferred
+d = defer.fail(f=current_exception)
+</pre>
+</div>
+
+
+<div class="slide">
+<h1>Deferreds: recap</h1>
+<ul>
+    <li>A Deferred represents a result that's not ready yet</li>
+    <li>Has an attached sequence of callbacks and errbacks</li>
+    <li>Can be nested
+    <ul>
+        <li>Note that infinite nesting (like tail recursion) is bad!</li>
+    </ul></li>
+    <li>Conceptually distinct from async IO
+    <ul>
+        <li>Haven't talked about sockets or pipes yet!</li>
+    </ul></li>
+    </li>
+</ul>
+<div class="handout">
+
+    <p>Deferreds are conceptually fairly simple, although there are some gotchas.</p>
+
+    <p>Note that we haven't looked at direct asynchronous IO -- sockets, pipes,
+    etc.  In fact, Twisted generally uses function or method calls to handle
+    those, e.g., <tt>lineReceived</tt> for the <a
+        href="http://twistedmatrix.com/documents/8.2.0/api/twisted.protocols.basic.LineReceiver.html"><tt>LineReceiver</tt></a>
+    class.</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Deferreds: sync and async</h1>
+<table width="100%">
+    <tr><th align="left">sync</th><th align="left">async</th></tr>
+    <tr><td>function call</td><td>return deferred</td></tr>
+    <tr><td>sequential execution</td><td><tt>d.addCallback() and return</tt></td></tr>
+    <tr><td>function return</td><td><tt>d.callback()</tt></td></tr>
+    <tr><td>raise exception</td><td><tt>d.errback()</tt></td></tr>
+    <tr><td>new thread</td><td>call deferred func &amp; don't return</td></tr>
+    <tr><td>join thread</td><td>add callback to thread's deferred</td></tr>
+</table>
+<div class="handout">
+
+    <p>With some careful programming, deferreds can model both sequential
+    execution and threaded execution.  These "threads" are lightweight and can
+    be created and destroyed easily, and of course synchronization requirements
+    are minimal.</p>
+
+    <p><i>Not</i> following careful programming can lead to buggy, confusing
+    spaghetti code.  In particular, think about starting a new "thread" vs.
+    sequential execution.</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Utilities: DeferredList</h1>
+<pre class="sh_python">
+from twisted.internet.defer import <a href="http://twistedmatrix.com/documents/8.2.0/api/twisted.internet.defer.DeferredList.html">DeferredList</a>
+
+def parallelLookup(usernames):
+    dl = []
+    for username in usernames:
+        dl.append(get_user_info(username))
+    dl = DeferredList(dl, consumeErrors=True)
+    def process(results):
+        rv = {}
+        for username, result in zip(usernames, results):
+            if results[0]:
+                rv[username] = results[1]
+            else:
+                rv[username] = None
+        return rv
+    dl.addCallback(process)
+    return dl
+</pre>
+<div class="handout">
+
+    <p>This calls <tt>get_user_info</tt> for each username, and then bundles
+    all of the resulting Deferreds into a single DeferredList -- in a fashion,
+    it starts a bunch of threads and then joins them.  DeferredList's behavior
+    can be customized easily; in this case, it fires when all of its
+    constituent deferreds are complete (fired or failed).  It ignores errors
+    internally (<tt>consumeErrors</tt>), and passes back a tuple <tt>(success,
+    result_or_failed)</tt> for each deferred.</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Utilities: callLater</h1>
+<pre class="sh_python">
+from twisted.python import defer
+from twisted.internet import reactor
+
+def countDown(N):
+    d = defer.Deferred()
+    def count(n):
+        print n
+        if n &gt; 0:
+            defer.callLater(1, count, n-1)
+        else:
+            d.callback(None)
+    count(N)
+    return d
+</pre>
+<div class="handout">
+
+    <p>Note that <tt>callLater</tt> does not use a Deferred -- just a
+    callable.  The <tt>countDown</tt> function is on example of how a function
+    can return a deferred and schedule it to fire later.</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Utilities: LoopingCall</h1>
+<pre class="sh_python">
+from twisted.python import defer
+from twisted.internet.task import <a href="http://twistedmatrix.com/documents/9.0.0/api/twisted.internet.task.LoopingCall.html">LoopingCall</a>
+
+def wait_for_file(filename, poll_interval = 1):
+    d = defer.Deferred()
+    def poll(filename):
+        if os.path.exists(filename):
+            l.stop()
+            d.callback(None)
+    l = LoopingCall(poll)
+    l.start(poll_interval)
+    return d
+</pre>
+<div class="handout">
+
+    <p>LoopingCall calls its method on a schedule, specified to the
+    <tt>start</tt> method.  It is often used to poll for changes, e.g., in the
+    filesystem.</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>Utilities: do not use</h1>
+<p>If you feel like you need these, then there's probably a design error somewhere.</p>
+<ul>
+    <li>maybeDeferred</li>
+    <li>Deferred.pause/unpause</li>
+    <li>Deferred.setTimeout</li>
+</ul>
+</div>
+
+
+<div class="slide">
+<h1>Background</h1>
+<ul>
+    <li>Practice: work on <a href="http://buildbot.net">Buildbot</a>'s unit tests</li>
+    <li>Twisted's <tt>unittest</tt> is almost the same as Python's, but <tt>setUp</tt>, <tt>tearDown</tt>, and test methods can return deferreds.</li>
+    <li>Need more tests in <tt>buildbot/test</tt>!
+</ul>
+</div>
+
+
+<div class="slide">
+<h1>Get Started</h1>
+<pre>
+$ git clone git://github.com/djmitche/buildbot.git
+$ virtualenv sandbox
+$ source sandbox/bin/activate
+(sandbox)$ python setup.py develop
+(sandbox)$ trial buildbot.test
+</pre>
+(you can also fork the project on github if your git-fu is strong enough)
 </div>
 
 
