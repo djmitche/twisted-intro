@@ -1,14 +1,14 @@
-example1:
+1:
 	python example1.py dustin
 
-example2:
+2:
 	python example2.py karl
 
-example2-exc:
+2x:
 	python example2.py jimbo
 
-example3:
+3:
 	python example3.py http://buildbot.net
 
-example3-exc:
+3x:
 	python example3.py http://hudson.com

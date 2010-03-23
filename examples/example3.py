@@ -12,7 +12,7 @@ def print_page_title(url):
         print "title:", title
         reactor.stop()
     def fail_info(f):
-        print "failed!", f
+        print "failed!", f.type, f.value
         reactor.stop()
     d.addCallbacks(got_info, fail_info)
 
