@@ -624,7 +624,12 @@ def wait_for_file(filename, poll_interval = 1):
 <h1>Utilities: do not use</h1>
 <p>If you feel like you need these, then there's probably a design error somewhere.</p>
 <ul>
-    <li>maybeDeferred</li>
+    <li>maybeDeferred
+    <ul>
+        <li>Useful for interfacing to other libraries, and for convenience, not not
+        as a core part of the design</li>
+    </ul>
+    </li>
     <li>Deferred.pause/unpause</li>
     <li>Deferred.setTimeout</li>
 </ul>
@@ -639,7 +644,7 @@ def wait_for_file(filename, poll_interval = 1):
     <li>Protocols</li>
     <li>Perspective Broker (Twisted RPC)</li>
     <li>The Twisted web frameworks: <a href="http://twistedmatrix.com/documents/current/web/howto/">web</a>, web2, Woven,
-        <a href="http://divmod.org/trac/wiki/DivmodNevow">Nevow</a> (caution: never worked?), Mantissa
+        <a href="http://divmod.org/trac/wiki/DivmodNevow">Nevow</a>, Mantissa
         (some of these were never documented)</li>
     <li><a href="http://twistedmatrix.com/documents/9.0.0/api/twisted.enterprise.adbapi.html">Enterprise</a> - database abstraction</li>
 </ul>
@@ -648,8 +653,8 @@ def wait_for_file(filename, poll_interval = 1):
     <p>A word of warning about Twisted: outside of the Twisted core, there are
     <i>many</i> abandoned projects.  Usually the older projects, labeled
     "deprecated, use $newstuff", are the projects you want to use.  The
-    $newstuff was generally never finished.  For example, Axiom replaces
-    Enterprise, but Axiom is not ready yet.</p>
+    $newstuff was often never finished, or at least never documented.  For
+    example, Axiom replaces Enterprise, but Axiom is not ready yet.</p>
 
     <p>Stick to the core, and do not be attracted by shiny things which sound
     like they might be useful.  If in doubt, ask other Twisted programmers who
