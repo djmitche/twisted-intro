@@ -285,7 +285,7 @@ def ajax_get_contacts(request):
 
     <p>This is a somewhat overwrought example of a full set of callbacks and
     errbacks.  Note that, because it just logs the error, the errback for
-    <tt>get_contats</tt> always returns the failure, passing it along to
+    <tt>get_contacts</tt> always returns the failure, passing it along to
     <tt>ajax_get_contacts</tt>' errback.  This is what I mean by a
     "nonterminal" errback.</p>
 
@@ -632,11 +632,46 @@ def wait_for_file(filename, poll_interval = 1):
 
 
 <div class="slide">
-<h1>Background</h1>
+<h1>Other Twisted Stuff</h1>
+<p>Not covered in this tutorial, but you should learn about:</p>
 <ul>
-    <li>Practice: work on <a href="http://buildbot.net">Buildbot</a>'s unit tests</li>
+    <li><a href="http://twistedmatrix.com/documents/8.2.0/api/twisted.application.service.Service.html">Services</a>, <a href="http://twistedmatrix.com/documents/8.2.0/api/twisted.application.service.html#Application">Applications</a>, and <a href="http://twistedmatrix.com/documents/current/core/howto/application.html">twistd</a> (the Twisted daemon)</li>
+    <li>Protocols</li>
+    <li>Perspective Broker (Twisted RPC)</li>
+    <li>The Twisted web frameworks: <a href="http://twistedmatrix.com/documents/current/web/howto/">web</a>, web2, Woven,
+        <a href="http://divmod.org/trac/wiki/DivmodNevow">Nevow</a> (caution: never worked?), Mantissa
+        (some of these were never documented)</li>
+    <li><a href="http://twistedmatrix.com/documents/9.0.0/api/twisted.enterprise.adbapi.html">Enterprise</a> - database abstraction</li>
+</ul>
+<div class="handout">
+    
+    <p>A word of warning about Twisted: outside of the Twisted core, there are
+    <i>many</i> abandoned projects.  Usually the older projects, labeled
+    "deprecated, use $newstuff", are the projects you want to use.  The
+    $newstuff was generally never finished.  For example, Axiom replaces
+    Enterprise, but Axiom is not ready yet.</p>
+
+    <p>Stick to the core, and do not be attracted by shiny things which sound
+    like they might be useful.  If in doubt, ask other Twisted programmers who
+    did not work for DivMod.</p>
+
+</div>
+
+</div>
+
+
+<div class="slide">
+<h1>Buildbot</h1>
+<p>Starting a new application in Twisted is <i>hard</i> and not recommended.  For practice, consider working on <a href="http://buildbot.net">Buildbot</a>'s unit tests</p>
+<ul>
     <li>Twisted's <tt>unittest</tt> is almost the same as Python's, but <tt>setUp</tt>, <tt>tearDown</tt>, and test methods can return deferreds.</li>
     <li>Need more tests in <tt>buildbot/test</tt>!
+    <ul>
+        <li>Warning: I am a stickler about tests! <a href="http://buildbot.net/trac/wiki/TowardBetterBuildbotTests">TowardBetterBuildbotTests</a></li>
+    </ul>
+    </li>
+    <li>Suggestion: tests for code under <tt><a href="http://djmitche.github.com/buildbot/docs/0.8.0beta1/reference/buildbot.slave-module.html">buildbot.slave</a></tt></li>
+    <li>Feel free to work on your own projects if you prefer</li>
 </ul>
 </div>
 
