@@ -162,43 +162,6 @@ def print_user_name(user):
     Deferred that fires with a user object.  <tt>get_user_name</tt> returns a
     Deferred that fires with the name of the user, or "(unknown)".</p>
 
-</div>
-</div>
-
-
-<div class="slide">
-<h1>Deferreds: chaining example</h1>
-<pre class="sh_python">
-# see example2.py<img style="float: right" src="example2.png" />
-def get_user_name(user):
-    d = mydb.get_user(user)
-    def extract_name(res):
-        if res:
-            return res.name
-        return "(unknown)"
-    d.addCallback(extract_name)
-    return d
-
-def print_user_name(user):
-    d = get_user_name(user)
-    def print_name(name):
-        print "Name:", name
-    d.addCallback(print_name)
-</pre>
-<div class="handout">
-
-    <p>Here two callbacks are added to the same deferred.  This is a common
-    pattern: get a deferred, add a callback to do your thing, and return the
-    same deferred.</p>
-
-    <p>Note that the deferred is initially fired with a User object.  The
-    <tt>extract_name</tt> callback returns a string, which is passed to the
-    next callback in the chain, <tt>print_user_name</tt>.</p>
-
-    <p>This is where API docs are useful: <tt>mydb.get_user</tt> returns a
-    Deferred that fires with a user object.  <tt>get_user_name</tt> returns a
-    Deferred that fires with the name of the user, or "(unknown)".</p>
-
     <p>What about error handling?  What if <tt>mydb.get_user</tt> raises an
     exception?</p>
 
