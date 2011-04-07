@@ -79,7 +79,7 @@ pre.sh_python { background: inherit }
 </ul>
 <div class="handout">
 
-    <p>The system requirements for an asynchornous programming environment are
+    <p>The system requirements for an asynchronous programming environment are
     the ability to do non-blocking IO, which means that functions like
     <tt>read</tt> and <tt>write</tt> will not block until data is available;
     and the ability to monitor multiple IO channels for activity
@@ -93,6 +93,25 @@ pre.sh_python { background: inherit }
 
     <p>We need something that can model an ongoing process without blocking.
     Sort of a deferred function return.</p>
+
+</div>
+</div>
+
+
+<div class="slide">
+<h1>What is Twisted?</h1>
+<p><i>Twisted is not magic</i><p>
+<ul>
+    <li>Just a (pure) python framework</li>
+    <li>Implements an asynchronous event loop (reactor)</li>
+    <li>Lots of useful utilities, protocols, etc.</li>
+</ul>
+<div class="handout">
+
+    <p>Twisted is not magic.  Python continues to operate exactly the way you
+    already know it does.  It has an efficient and portable event loop, along
+    with a huge suite of utilities, protocols, interfaces, and so on -- and I
+    won't be talking about those here.</p>
 
 </div>
 </div>
@@ -236,11 +255,11 @@ def get_contacts(username):
     return d
 
 def ajax_get_contacts(request):
-    d = get_contacts(request.query['username'][0]) # BUG
+    d = get_contacts(request.query['username'][0]) # error checking!?
     def cb(ctctnames):
         return json.dumps({'contacts' : ctctnames})
     def eb(f):
-        return json.dumps({'error' : str(f.value))
+        return json.dumps({'error' : str(f.value)})
     d.addCallbacks(cb, eb)
     return d
 </pre>
@@ -258,10 +277,6 @@ def ajax_get_contacts(request):
     JavaScript and not with the usual browser mechanisms.  So the failure is
     "eaten" here, and the web framework's callback, not its errback, will be
     called next.</p>
-
-    <p>Note that an exception in <tt>im_service.get_contact_list</tt> will
-    leave the deferred un-called-back.  This is bad!  Don't allow this to
-    happen!</p>
 
     <p>However, an exception in the callback for <tt>get_contacts</tt> (maybe a
     contact object without a <tt>username</tt> attribute?) will cause the
@@ -293,7 +308,7 @@ def ajax_get_contacts(request):
     def cb(ctctnames):
         return json.dumps({'contacts' : ctctnames})
     def eb(f):
-        return json.dumps({'error' : str(f.value))
+        return json.dumps({'error' : str(f.value)})
     d.addCallbacks(cb, eb)
     return d
 </pre>
@@ -328,7 +343,7 @@ def ajax_get_contacts(request):
     def cb(ctctnames):
         return json.dumps({'contacts' : ctctnames})
     def eb(f):
-        return json.dumps({'error' : str(f.value))
+        return json.dumps({'error' : str(f.value)})
     d.addCallbacks(cb, eb)
     return d
 </pre>
@@ -356,7 +371,7 @@ def ajax_get_contacts(request):
     def cb(ctctnames):
         return json.dumps({'contacts' : ctctnames})
     def eb(f):
-        return json.dumps({'error' : str(f.value))
+        return json.dumps({'error' : str(f.value)})
     d.addCallbacks(cb, eb)
     return d
 </pre>
@@ -389,7 +404,7 @@ def ajax_get_contacts(request):
     def json_cb(ctctnames):
         return json.dumps({'contacts' : ctctnames})
     def json_eb(f):
-        return json.dumps({'error' : str(f.value))
+        return json.dumps({'error' : str(f.value)})
     d.addCallbacks(json_cb, json_eb)
     return d
 </pre>
